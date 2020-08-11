@@ -93,16 +93,80 @@ const flappyBird = {
     },
 
 }
+const mensagemGetReady = {
+    sX: 134,
+    sY:0,
+    w: 174,
+    h: 152,
+    x: (canvas.width / 2) - 174 / 2,
+    y: 50,
+
+    desenha() {
+        contexto.drawImage(
+            sprites,
+            mensagemGetReady.sX, mensagemGetReady.sY,
+            mensagemGetReady.w, mensagemGetReady.h,
+            mensagemGetReady.x, mensagemGetReady.y,
+            mensagemGetReady.w, mensagemGetReady.h
+        );
+    },
+}
+
+/*
+    Prevê a possibilidade de trocas de telas. Cria uma variável e uma função, que por meio de um parametro
+    (novaTela), modifica a tela principal (tela principal é a tela mostrada na tela em determinado momento).
+*/ 
+let telaAtiva = {};
+function mudaParaTela(novaTela) {
+    telaAtiva = novaTela;
+}
+
+//Cria as cada tela com suas propriedade inerentes e respectivas funções (desenha e atualiza).
+const Telas = {
+    INICIO: {
+        desenha() {
+            planoDeFundo.desenha();
+            chao.desenha();
+            flappyBird.desenha();
+            
+            mensagemGetReady.desenha();
+            
+        },
+        click() {
+            mudaParaTela(Telas.JOGO);
+
+
+        },
+        atualiza() {
+
+        }
+    },
+    JOGO: {
+        desenha() {
+            planoDeFundo.desenha();
+            chao.desenha();
+            flappyBird.desenha();
+        },
+        atualiza() {
+            flappyBird.atualiza();
+        }
+    }
+}
 
 
 function loop() {
-    flappyBird.atualiza();
-    
-    planoDeFundo.desenha();
-    flappyBird.desenha();
-    chao.desenha();
+   
+    telaAtiva.desenha();
+    telaAtiva.atualiza();
 
     requestAnimationFrame(loop)
 }
 
+window.addEventListener('click', function(){
+    if(telaAtiva.click){
+        telaAtiva.click();
+    }
+})
+
+mudaParaTela(Telas.INICIO);
 loop();
