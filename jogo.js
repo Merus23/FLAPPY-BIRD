@@ -1,10 +1,13 @@
-console.log('Teste visibilidade');
-
 const sprites = new Image();
 sprites.src = '../sprites.png';
 
+const somDe_Hit = new Audio();
+somDe_Hit.src = '../efeitos/hit.wav';
+
 const canvas = document.querySelector('canvas');
 const contexto = canvas.getContext('2d');
+
+
 
 //Plano de fundo
 const planoDeFundo = {
@@ -63,36 +66,60 @@ const chao = {
     }
 }
 
-//flappyBird (o personagem)
-const flappyBird = {
-    spriteX: 0,
-    spriteY: 0,
-    largura: 33,
-    altura: 24,
-    x: 10,
-    y: 50,
+function fazColisão(flappyBird, chao) {
+    const flappyBirdY = flappyBird.y + flappyBird.altura;
+    const chaoY = chao.y;
 
-    //velocidade e gravidade que operação sobre o pássaro.
-    gravidade: 0.25,
-    velocidade: 0,
-
-    atualiza() {
-        flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
-            
-        flappyBird.y =  flappyBird.y + flappyBird.velocidade;
-    },
-
-    desenha() {
-        contexto.drawImage(
-            sprites,
-            flappyBird.spriteX, flappyBird.spriteY, //Sprite X, Sprite Y
-            flappyBird.largura, flappyBird.altura, //Tamannho do recorte da imagem
-            flappyBird.x, flappyBird.y,
-            flappyBird.largura, flappyBird.altura,
-        );
-    },
-
+    if(flappyBirdY >= chaoY){
+        return true;
+    }
+    return false;
+    
 }
+function criaFlappyBird() {
+    //flappyBird (o personagem)
+    const flappyBird = {
+        spriteX: 0,
+        spriteY: 0,
+        largura: 33,
+        altura: 24,
+        x: 10,
+        y: 50,
+        pulo: 4.6,
+
+        //velocidade e gravidade que operação sobre o pássaro.
+        gravidade: 0.25,
+        velocidade: 0,
+        pula(){
+            flappyBird.velocidade = - flappyBird.pulo;
+        },
+        atualiza() {
+            if(fazColisão(flappyBird, chao)) {
+                
+                console.log('Fez colisão');
+                somDe_Hit.play();
+                mudaParaTela(Telas.INICIO);
+                return;
+            }
+            
+            flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;        
+            flappyBird.y =  flappyBird.y + flappyBird.velocidade;
+        },
+
+        desenha() {
+            contexto.drawImage(
+                sprites,
+                flappyBird.spriteX, flappyBird.spriteY, //Sprite X, Sprite Y
+                flappyBird.largura, flappyBird.altura, //Tamannho do recorte da imagem
+                flappyBird.x, flappyBird.y,
+                flappyBird.largura, flappyBird.altura,
+            );
+        },
+
+    }    
+    return flappyBird;
+}
+
 const mensagemGetReady = {
     sX: 134,
     sY:0,
@@ -112,22 +139,31 @@ const mensagemGetReady = {
     },
 }
 
+
+const globais = {};
 /*
-    Prevê a possibilidade de trocas de telas. Cria uma variável e uma função, que por meio de um parametro
+    Provê a possibilidade de trocas de telas. Cria uma variável e uma função, que por meio de um parametro
     (novaTela), modifica a tela principal (tela principal é a tela mostrada na tela em determinado momento).
 */ 
 let telaAtiva = {};
 function mudaParaTela(novaTela) {
     telaAtiva = novaTela;
+
+    if(telaAtiva.inicializa){
+        telaAtiva.inicializa();
+    }
 }
 
 //Cria as cada tela com suas propriedade inerentes e respectivas funções (desenha e atualiza).
 const Telas = {
     INICIO: {
+        inicializa(){
+            globais.flappyBird = criaFlappyBird();
+        },
         desenha() {
             planoDeFundo.desenha();
             chao.desenha();
-            flappyBird.desenha();
+            globais.flappyBird.desenha();
             
             mensagemGetReady.desenha();
             
@@ -145,10 +181,13 @@ const Telas = {
         desenha() {
             planoDeFundo.desenha();
             chao.desenha();
-            flappyBird.desenha();
+            globais.flappyBird.desenha();
+        },
+        click(){
+            globais.flappyBird.pula();
         },
         atualiza() {
-            flappyBird.atualiza();
+            globais.flappyBird.atualiza();
         }
     }
 }
